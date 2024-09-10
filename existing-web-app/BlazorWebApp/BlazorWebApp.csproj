@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\existing-web-app.ServiceDefaults\existing-web-app.ServiceDefaults.csproj" />
+  </ItemGroup>
+
 </Project>
