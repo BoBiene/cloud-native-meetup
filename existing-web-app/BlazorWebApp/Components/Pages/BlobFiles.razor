@@ -74,12 +74,19 @@
 
     private string GetDownloadUrl(string fileName)
     {
-        // Hole einen BlobClient für die Datei
-        var blobClient = containerClient.GetBlobClient(fileName);
+        try
+        {
+            // Hole einen BlobClient für die Datei
+            var blobClient = containerClient.GetBlobClient(fileName);
 
-        // Generiere eine signierte URL (SAS-Token) für den sicheren Download
-        var sasUri = blobClient.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
+            // Generiere eine signierte URL (SAS-Token) für den sicheren Download
+            var sasUri = blobClient.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
 
-        return sasUri.ToString();
+            return sasUri.ToString();
+        }
+        catch
+        {
+            return "#";
+        }
     }
 }

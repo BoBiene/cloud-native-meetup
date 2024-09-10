@@ -1,0 +1,47 @@
+﻿@page "/webhook"
+@rendermode InteractiveServer
+@using System.Net.Http
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@inject HttpClient HttpClient
+
+<h3>Webhook Call</h3>
+
+<a href="@Configuration["REST_DASHBOARD"]" target="_blank" class="btn btn-info">
+    Open Dashboard
+</a>
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-body">
+            <form @onsubmit="SubmitForm">
+                <div class="mb-3">
+                    <label for="nameInput" class="form-label">Name</label>
+                    <input type="text" id="nameInput" @bind="name" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string name = string.Empty;
+
+    private async Task SubmitForm()
+    {
+        var endpoint = Configuration["REST_ENDPOINT"];
+        var response = await HttpClient.PostAsJsonAsync(endpoint, new { Name = name });
+
+        if (response.IsSuccessStatusCode)
+        {
+            // Handle success
+            Console.WriteLine("Webhook successfully called!");
+        }
+        else
+        {
+            // Handle failure
+            Console.WriteLine("Webhook call failed.");
+        }
+    }
+}
