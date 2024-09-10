@@ -1,0 +1,85 @@
+﻿@page "/blobfiles"
+@rendermode InteractiveServer
+@using Azure.Storage.Blobs
+@using Azure.Storage.Blobs.Models
+@inject BlobServiceClient BlobServiceClient
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title">Datei Upload</h3>
+
+            <!-- Datei Upload Input -->
+            <div class="mb-3">
+                <InputFile OnChange="@UploadFile" class="form-control" />
+            </div>
+
+            <!-- Dateien im Blob Storage -->
+            @if (files != null && files.Any())
+            {
+                <h5>Verfügbare Dateien im Blob Storage</h5>
+                <ul class="list-group">
+                    @foreach (var file in files)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @file
+                            <a href="@GetDownloadUrl(file)" target="_blank" class="btn btn-primary btn-sm">
+                                Download
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<string> files = new();
+    private BlobContainerClient containerClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        containerClient = BlobServiceClient.GetBlobContainerClient("blobs");
+        await containerClient.CreateIfNotExistsAsync();
+        await LoadFiles();
+    }
+
+    private async Task LoadFiles()
+    {
+        files.Clear();
+        await foreach (BlobItem blobItem in containerClient.GetBlobsAsync())
+        {
+            files.Add(blobItem.Name);
+        }
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e)
+    {
+        var uploadedFile = e.File;
+        if (uploadedFile == null)
+        {
+            return;
+        }
+
+        var blobClient = containerClient.GetBlobClient(uploadedFile.Name);
+
+        // Datei in den Blob Storage hochladen
+        using var stream = uploadedFile.OpenReadStream();
+        await blobClient.UploadAsync(stream, overwrite: true);
+
+        // Aktualisiere die Dateiliste
+        await LoadFiles();
+    }
+
+    private string GetDownloadUrl(string fileName)
+    {
+        // Hole einen BlobClient für die Datei
+        var blobClient = containerClient.GetBlobClient(fileName);
+
+        // Generiere eine signierte URL (SAS-Token) für den sicheren Download
+        var sasUri = blobClient.GenerateSasUri(Azure.Storage.Sas.BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(1));
+
+        return sasUri.ToString();
+    }
+}

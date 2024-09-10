@@ -13,6 +13,8 @@ namespace BlazorWebApp
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            //builder.AddAzureBlobClient("blobs");
+
             var app = builder.Build();
 
             app.MapDefaultEndpoints();
