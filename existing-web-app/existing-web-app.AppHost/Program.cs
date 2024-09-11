@@ -9,6 +9,7 @@ var blobs = builder
 
 var blazorApp = builder.AddProject<Projects.BlazorWebApp>("blazorwebapp")
     .WithReference(blobs)
+    .WithReplicas(2)
     .WithExternalHttpEndpoints();
 
 if (builder.ExecutionContext.IsPublishMode)
